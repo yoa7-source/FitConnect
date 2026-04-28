@@ -5,15 +5,15 @@
 ## VM Architecture
 
 - VM1 Frontend: Apache web server
-  - VLAN IP: 10.0.0.10
+  - VLAN IP: 10.0.0.x
   - Serves HTML, CSS, and JavaScript frontend pages
 
 - VM2 Backend: Node.js and Express
-  - VLAN IP: 10.0.0.20
+  - VLAN IP: 10.0.0.x
   - Handles register and login API requests
 
 - VM3 Database: MongoDB
-  - VLAN IP: 10.0.0.30
+  - VLAN IP: 10.0.0.x
   - Stores user account data
 
 ## Network Design
@@ -26,8 +26,8 @@ Only the Frontend VM has public/NAT internet access. Backend and Database are pr
 
 The frontend sends register and login requests to:
 
-- http://10.0.0.20:3000/api/register
-- http://10.0.0.20:3000/api/login
+- http://10.0.0.x:3000/api/register
+- http://10.0.0.x:3000/api/login
 
 The backend stores user data in MongoDB.
 
@@ -55,11 +55,11 @@ Frontend VM:
 
 Backend VM:
 - Allows port 22 for SSH
-- Allows port 3000 only from Frontend VM 10.0.0.10
+- Allows port 3000 only from Frontend VM 10.0.0.x
 
 Database VM:
 - Allows port 22 for SSH
-- Allows port 27017 only from Backend VM 10.0.0.20
+- Allows port 27017 only from Backend VM 10.0.0.x
 
 ## Milestone 2 Test
 
