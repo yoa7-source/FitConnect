@@ -352,6 +352,35 @@ app.get("/api/progress/:email", async (req, res) => {
   }
 });
 
+app.get("/api/users/search", async (req, res) => {
+  try {
+    const query = cleanInput(req.query.q);
+
+    if (!query) {
+      return res.status(400).json({
+        message: "Search query is required",
+      });
+    }
+
+    const users = await User.find({
+      $or: [
+        { name: { $regex: query, $options: "i" } },
+        { email: { $regex: query, $options: "i" } },
+      ],
+    }).select("name email");
+
+    writeLog(`USER SEARCH: ${query}`);
+
+    res.json(users);
+  } catch (error) {
+    writeLog(`USER SEARCH ERROR: ${error.message}`);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+});
+
 // Health check
 app.get("/", (req, res) => {
   res.send("FitConnect backend is running");

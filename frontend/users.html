@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Find Users - FitConnect</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo">FitConnect</div>
+  <ul>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="ai.html">AI Routine</a></li>
+    <li><a href="routines.html">My Routines</a></li>
+    <li><a href="progress.html">Progress</a></li>
+    <li><a href="users.html">Find Users</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <h1>Find FitConnect Users</h1>
+  <p>Search for other users by name or email.</p>
+</section>
+
+<div class="auth-container">
+  <div class="auth-box">
+    <h2>User Search</h2>
+
+    <div class="form-group">
+      <label>Search</label>
+      <input type="text" id="searchInput" placeholder="Enter name or email">
+    </div>
+
+    <button class="btn" onclick="searchUsers()">Search</button>
+
+    <div id="results" style="margin-top: 25px;"></div>
+  </div>
+</div>
+
+<script>
+const user = localStorage.getItem("loggedInUser");
+
+if (!user) {
+  window.location.href = "login.html";
+}
+
+async function searchUsers() {
+  const query = document.getElementById("searchInput").value;
+
+  const response = await fetch(
+    `http://10.0.0.20:3000/api/users/search?q=${encodeURIComponent(query)}`
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    alert(data.message);
+    return;
+  }
+
+  let html = "<h3>Search Results</h3>";
+
+  if (data.length === 0) {
+    html += "<p>No users found.</p>";
+  }
+
+  data.forEach(user => {
+    html += `
+      <div class="feature-card">
+        <h3>${user.name}</h3>
+        <p>${user.email}</p>
+        <button class="btn" onclick="alert('Messaging feature coming soon')">
+          Contact User
+        </button>
+      </div>
+    `;
+  });
+
+  document.getElementById("results").innerHTML = html;
+}
+</script>
+
+</body>
+</html>
