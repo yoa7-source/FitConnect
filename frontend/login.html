@@ -40,5 +40,42 @@
     </div>
   </div>
 
+    <script>
+        document.querySelector('.btn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Basic validation
+            if (!email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://10.0.0.20:3000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // STORE SESSION: Save the name or token so other pages know who is logged in
+                    localStorage.setItem("loggedInUser", data.name);
+                    localStorage.setItem("loggedInEmail", email);
+                    
+                    alert('Login successful. Welcome ' + data.name);
+                    // Redirect to a dashboard or home page
+                    window.location.href = "dashboard.html"; 
+                } else {
+                    alert(data.message || 'Invalid login credentials');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Could not connect to the server. Check if your API is running.');
+            }
+        });
+    </script>
 </body>
 </html>

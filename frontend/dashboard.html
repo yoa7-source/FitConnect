@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FitConnect Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo">FitConnect</div>
+  <ul>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="ai.html">AI Routine</a></li>
+    <li><a href="routines.html">My Routines</a></li>
+    <li><a href="progress.html">Progress</a></li>
+    <li><a href="users.html">Find Users</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <h1 id="welcome">Welcome to FitConnect</h1>
+  <p>Choose a feature below to continue your fitness journey.</p>
+</section>
+
+<section class="features">
+  <div class="feature-card">
+    <h3>AI Routine Assistant</h3>
+    <p>Generate a suggested workout routine based on your goal and fitness level.</p>
+    <br>
+    <a class="btn" href="ai.html">Open AI Routine</a>
+  </div>
+
+  <div class="feature-card">
+    <h3>Workout Routines</h3>
+    <p>Create and save your own workout routines.</p>
+    <br>
+    <a class="btn" href="routines.html">Open Routines</a>
+  </div>
+
+  <div class="feature-card">
+    <h3>Progress Tracking</h3>
+    <p>View sample fitness metrics like calories, BPM, and workout time.</p>
+    <br>
+    <a class="btn" href="progress.html">Open Progress</a>
+  </div>
+
+  <div class="feature-card">
+    <h3>Find Users</h3>
+    <p>Search for other FitConnect users.</p>
+    <br>
+    <a class="btn" href="users.html">Find Users</a>
+  </div>
+
+  <div class="feature-card">
+    <h3>Logout</h3>
+    <p>End your current session and return to the login page.</p>
+    <br>
+    <button class="btn" onclick="logout()">Logout</button>
+  </div>
+</section>
+
+<script>
+  const user = localStorage.getItem("loggedInUser");
+
+  if (!user) {
+    window.location.href = "login.html";
+  }
+
+  document.getElementById("welcome").innerText =
+    "Welcome, " + user;
+
+  function logout() {
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("loggedInEmail");
+    alert("Logged out successfully");
+    window.location.href = "login.html";
+  }
+</script>
+
+</body>
+</html>
