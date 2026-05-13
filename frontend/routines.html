@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Workout Routines</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo">FitConnect</div>
+  <ul>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="ai.html">AI Routine</a></li>
+    <li><a href="routines.html">My Routines</a></li>
+  </ul>
+</nav>
+
+<div class="auth-container">
+  <div class="auth-box">
+
+    <h2>Create Workout Routine</h2>
+
+    <input type="text" id="routineName" placeholder="Routine Name">
+
+    <textarea id="exercises"
+      placeholder="Enter exercises separated by commas"></textarea>
+
+    <button class="btn" onclick="saveRoutine()">
+      Save Routine
+    </button>
+
+    <hr>
+
+    <h2>My Saved Routines</h2>
+
+    <div id="routineList"></div>
+
+  </div>
+</div>
+
+<script>
+const userEmail = localStorage.getItem("loggedInEmail");
+
+if (!userEmail) {
+  window.location.href = "login.html";
+}
+
+async function saveRoutine() {
+  const routineName =
+    document.getElementById("routineName").value;
+
+  const exercises =
+    document.getElementById("exercises")
+      .value
+      .split(",");
+
+  const response = await fetch(
+    "http://10.0.0.20:3000/api/routines",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        userEmail,
+        routineName,
+        exercises
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  alert(data.message);
+
+  loadRoutines();
+}
+
+async function loadRoutines() {
+  const response = await fetch(
+    `http://10.0.0.20:3000/api/routines/${userEmail}`
+  );
+
+  const routines = await response.json();
+
+  let html = "";
+
+  routines.forEach(routine => {
+    html += `
+      <div class="feature-card">
+        <h3>${routine.routineName}</h3>
+
+        <ul>
+          ${routine.exercises.map(e =>
+            `<li>${e}</li>`
+          ).join("")}
+        </ul>
+      </div>
+    `;
+  });
+
+  document.getElementById("routineList")
+    .innerHTML = html;
+}
+
+loadRoutines();
+</script>
+
+</body>
+</html>
