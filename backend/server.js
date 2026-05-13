@@ -175,11 +175,15 @@ app.post("/api/login", async (req, res) => {
       });
     }
 
-    writeLog(`LOGIN SUCCESS: ${email}`);
+    const mfaCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    writeLog(`MFA CODE GENERATED for ${email}: ${mfaCode}`);
 
     res.json({
-      message: "Login successful",
+      message: "Password accepted. MFA required.",
       name: user.name,
+      email: user.name,
+      mfaCode: mfaCode,
     });
   } catch (error) {
     writeLog(`LOGIN ERROR: ${error.message}`);
@@ -495,6 +499,60 @@ app.delete("/api/admin/comments/:id", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
+});
+
+//exercise route for API
+const exercises = [
+  {
+    name: "Push Up",
+    muscle: "Chest",
+    difficulty: "Beginner",
+    instructions: "Keep your body straight, lower yourself, then push back up."
+  },
+  {
+    name: "Squat",
+    muscle: "Legs",
+    difficulty: "Beginner",
+    instructions: "Keep your back straight, lower your hips, then stand back up."
+  },
+  {
+    name: "Bench Press",
+    muscle: "Chest",
+    difficulty: "Intermediate",
+    instructions: "Lower the bar to your chest and press it back up."
+  },
+  {
+    name: "Deadlift",
+    muscle: "Back",
+    difficulty: "Advanced",
+    instructions: "Lift the bar from the floor while keeping your back neutral."
+  },
+  {
+    name: "Plank",
+    muscle: "Core",
+    difficulty: "Beginner",
+    instructions: "Hold your body straight while resting on forearms and toes."
+  }
+];
+
+app.get("/api/exercises/search", (req, res) => {
+  const query = cleanInput(req.query.q).toLowerCase();
+
+  if (!query) {
+    return res.status(400).json({
+      message: "Search query is required"
+    });
+  }
+
+  const results = exercises.filter(exercise =>
+    exercise.name.toLowerCase().includes(query) ||
+    exercise.muscle.toLowerCase().includes(query) ||
+    exercise.difficulty.toLowerCase().includes(query)
+  );
+
+  writeLog(`EXERCISE SEARCH: ${query}`);
+
+  res.json(results);
 });
 
 // Health check
