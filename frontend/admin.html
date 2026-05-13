@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FitConnect Admin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo">FitConnect Admin</div>
+  <ul>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="admin.html">Admin</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <h1>Admin Dashboard</h1>
+  <p>Manage users and comments.</p>
+</section>
+
+<section class="features">
+  <div class="feature-card">
+    <h2>Users</h2>
+    <div id="usersList">Loading users...</div>
+  </div>
+
+  <div class="feature-card">
+    <h2>Comments</h2>
+    <div id="commentsList">Loading comments...</div>
+  </div>
+</section>
+
+<script>
+const userEmail = localStorage.getItem("loggedInEmail");
+
+if (!userEmail) {
+  window.location.href = "login.html";
+}
+
+if (userEmail !== "admin@fitconnect.com") {
+  alert("Admin access only");
+  window.location.href = "dashboard.html";
+}
+
+async function loadUsers() {
+  const response = await fetch("http://10.0.0.20:3000/api/admin/users");
+  const users = await response.json();
+
+  let html = "";
+
+  users.forEach(user => {
+    html += `
+      <div style="border-top:1px solid #333; padding:10px 0;">
+        <input id="name-${user._id}" value="${user.name}">
+        <input id="email-${user._id}" value="${user.email}">
+        <button class="btn" onclick="updateUser('${user._id}')">Update</button>
+      </div>
+    `;
+  });
+
+  document.getElementById("usersList").innerHTML = html;
+}
+
+async function updateUser(id) {
+  const name = document.getElementById(`name-${id}`).value;
+  const email = document.getElementById(`email-${id}`).value;
+
+  const response = await fetch(`http://10.0.0.20:3000/api/admin/users/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ name, email })
+  });
+
+  const data = await response.json();
+  alert(data.message);
+  loadUsers();
+}
+
+async function loadComments() {
+  const response = await fetch("http://10.0.0.20:3000/api/admin/comments");
+  const comments = await response.json();
+
+  let html = "";
+
+  comments.forEach(comment => {
+    html += `
+      <div style="border-top:1px solid #333; padding:10px 0;">
+        <strong>${comment.userEmail}</strong>
+        <p>${comment.commentText}</p>
+        <button class="btn" onclick="deleteComment('${comment._id}')">
+          Remove Comment
+        </button>
+      </div>
+    `;
+  });
+
+  document.getElementById("commentsList").innerHTML = html;
+}
+
+async function deleteComment(id) {
+  const response = await fetch(`http://10.0.0.20:3000/api/admin/comments/${id}`, {
+    method: "DELETE"
+  });
+
+  const data = await response.json();
+  alert(data.message);
+  loadComments();
+}
+
+loadUsers();
+loadComments();
+</script>
+
+</body>
+</html>

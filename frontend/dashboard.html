@@ -30,6 +30,14 @@
     <a class="btn" href="ai.html">Open AI Routine</a>
   </div>
 
+  <div class="feature-card" id="adminCard" style="display:none;">
+    <div class="icon">🛠️</div>
+    <h3>Admin Dashboard</h3>
+    <p>Manage users and remove comments.</p>
+    <br>
+    <a class="btn" href="admin.html">Open Admin</a>
+  </div>
+
   <div class="feature-card">
     <h3>Workout Routines</h3>
     <p>Create and save your own workout routines.</p>
@@ -75,6 +83,12 @@
     alert("Logged out successfully");
     window.location.href = "login.html";
   }
+
+  const email = localStorage.getItem("loggedInEmail");
+
+  if (email === "admin@fitconnect.com") {
+    document.getElementById("adminCard").style.display = "block";
+ }
 </script>
 
 </body>

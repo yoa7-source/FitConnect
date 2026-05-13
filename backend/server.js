@@ -300,6 +300,7 @@ app.get("/api/routines/:email", async (req, res) => {
   }
 });
 
+//progress model
 app.post("/api/progress", async (req, res) => {
   try {
     const userEmail = cleanInput(req.body.userEmail);
@@ -335,6 +336,19 @@ app.post("/api/progress", async (req, res) => {
     });
   }
 });
+
+//comment
+const commentSchema = new mongoose.Schema({
+  routineId: String,
+  userEmail: String,
+  commentText: String,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const Comment = mongoose.model("Comment", commentSchema);
 
 app.get("/api/progress/:email", async (req, res) => {
   try {
@@ -378,6 +392,108 @@ app.get("/api/users/search", async (req, res) => {
     res.status(500).json({
       message: "Server error",
     });
+  }
+});
+
+//comment route
+app.post("/api/comments", async (req, res) => {
+  try {
+    const routineId = cleanInput(req.body.routineId);
+    const userEmail = cleanInput(req.body.userEmail);
+    const commentText = cleanInput(req.body.commentText);
+
+    if (!routineId || !userEmail || !commentText) {
+      return res.status(400).json({
+        message: "Missing comment data",
+      });
+    }
+
+    const comment = new Comment({
+      routineId,
+      userEmail,
+      commentText,
+    });
+
+    await comment.save();
+
+    writeLog(`COMMENT ADDED: ${userEmail}`);
+
+    res.status(201).json({
+      message: "Comment added successfully",
+    });
+  } catch (error) {
+    writeLog(`COMMENT ERROR: ${error.message}`);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+});
+
+app.get("/api/comments/:routineId", async (req, res) => {
+  try {
+    const routineId = cleanInput(req.params.routineId);
+
+    const comments = await Comment.find({
+      routineId: routineId,
+    }).sort({ createdAt: -1 });
+
+    res.json(comments);
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+});
+
+
+//admin route 
+
+app.get("/api/admin/users", async (req, res) => {
+  try {
+    const users = await User.find().select("name email");
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.put("/api/admin/users/:id", async (req, res) => {
+  try {
+    const name = cleanInput(req.body.name);
+    const email = cleanInput(req.body.email);
+
+    await User.findByIdAndUpdate(req.params.id, {
+      name,
+      email,
+    });
+
+    writeLog(`ADMIN UPDATED USER: ${email}`);
+
+    res.json({ message: "User updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.get("/api/admin/comments", async (req, res) => {
+  try {
+    const comments = await Comment.find().sort({ createdAt: -1 });
+    res.json(comments);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.delete("/api/admin/comments/:id", async (req, res) => {
+  try {
+    await Comment.findByIdAndDelete(req.params.id);
+
+    writeLog(`ADMIN REMOVED COMMENT: ${req.params.id}`);
+
+    res.json({ message: "Comment removed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 
