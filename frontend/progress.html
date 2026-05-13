@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FitConnect Progress Tracking</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo">FitConnect</div>
+  <ul>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="ai.html">AI Routine</a></li>
+    <li><a href="routines.html">My Routines</a></li>
+    <li><a href="progress.html">Progress</a></li>
+    <li><a href="users.html">Find Users</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <h1>Fitness Progress Tracking</h1>
+  <p>Add your workout metrics and view your personal progress charts.</p>
+</section>
+
+<div class="auth-container">
+  <div class="auth-box">
+    <h2>Add Progress Entry</h2>
+
+    <div class="form-group">
+      <label>Calories Burned</label>
+      <input type="number" id="calories" placeholder="Example: 450">
+    </div>
+
+    <div class="form-group">
+      <label>Average BPM</label>
+      <input type="number" id="bpm" placeholder="Example: 125">
+    </div>
+
+    <div class="form-group">
+      <label>Workout Duration</label>
+      <input type="number" id="duration" placeholder="Minutes">
+    </div>
+
+    <button class="btn" onclick="saveProgress()">Save Progress</button>
+  </div>
+</div>
+
+<section class="features">
+  <div class="feature-card">
+    <h3>Calories Burned</h3>
+    <canvas id="caloriesChart" width="300" height="200"></canvas>
+  </div>
+
+  <div class="feature-card">
+    <h3>Average Heart Rate</h3>
+    <canvas id="bpmChart" width="300" height="200"></canvas>
+  </div>
+
+  <div class="feature-card">
+    <h3>Workout Duration</h3>
+    <canvas id="durationChart" width="300" height="200"></canvas>
+  </div>
+</section>
+
+<script>
+const userEmail = localStorage.getItem("loggedInEmail");
+
+if (!userEmail) {
+  window.location.href = "login.html";
+}
+
+async function saveProgress() {
+  const calories = document.getElementById("calories").value;
+  const bpm = document.getElementById("bpm").value;
+  const duration = document.getElementById("duration").value;
+
+  const response = await fetch("http://10.0.0.20:3000/api/progress", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      userEmail,
+      calories,
+      bpm,
+      duration
+    })
+  });
+
+  const data = await response.json();
+  alert(data.message);
+
+  document.getElementById("calories").value = "";
+  document.getElementById("bpm").value = "";
+  document.getElementById("duration").value = "";
+
+  loadProgress();
+}
+
+async function loadProgress() {
+  const response = await fetch(
+    `http://10.0.0.20:3000/api/progress/${userEmail}`
+  );
+
+  const entries = await response.json();
+
+  const labels = entries.map((entry, index) => "Entry " + (index + 1));
+  const calories = entries.map(entry => entry.calories);
+  const bpm = entries.map(entry => entry.bpm);
+  const duration = entries.map(entry => entry.duration);
+
+  drawBarChart("caloriesChart", labels, calories, "Calories");
+  drawBarChart("bpmChart", labels, bpm, "BPM");
+  drawBarChart("durationChart", labels, duration, "Minutes");
+}
+
+function drawBarChart(canvasId, labels, values, labelText) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext("2d");
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (values.length === 0) {
+    ctx.fillStyle = "#f0f0f0";
+    ctx.font = "14px Arial";
+    ctx.fillText("No progress data yet", 70, 100);
+    return;
+  }
+
+  const maxValue = Math.max(...values);
+  const chartHeight = 130;
+  const barWidth = 30;
+  const gap = 15;
+  const startX = 30;
+  const baseY = 160;
+
+  ctx.font = "12px Arial";
+  ctx.fillStyle = "#f0f0f0";
+  ctx.fillText(labelText, 10, 15);
+
+  values.forEach((value, index) => {
+    const barHeight = (value / maxValue) * chartHeight;
+    const x = startX + index * (barWidth + gap);
+    const y = baseY - barHeight;
+
+    ctx.fillStyle = "#e85d04";
+    ctx.fillRect(x, y, barWidth, barHeight);
+
+    ctx.fillStyle = "#f0f0f0";
+    ctx.fillText(value, x + 2, y - 5);
+    ctx.fillText(labels[index], x - 5, baseY + 15);
+  });
+}
+
+loadProgress();
+</script>
+
+</body>
+</html>

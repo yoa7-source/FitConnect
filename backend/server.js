@@ -55,6 +55,19 @@ const Routine = mongoose.model("Routine", routineSchema);
 
 const User = mongoose.model("User", userSchema);
 
+const progressSchema = new mongoose.Schema({
+  userEmail: String,
+  calories: Number,
+  bpm: Number,
+  duration: Number,
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const Progress = mongoose.model("Progress", progressSchema);
+
 // Register route
 app.post("/api/register", async (req, res) => {
   try {
@@ -280,6 +293,58 @@ app.get("/api/routines/:email", async (req, res) => {
 
     res.json(routines);
 
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+});
+
+app.post("/api/progress", async (req, res) => {
+  try {
+    const userEmail = cleanInput(req.body.userEmail);
+    const calories = Number(req.body.calories);
+    const bpm = Number(req.body.bpm);
+    const duration = Number(req.body.duration);
+
+    if (!userEmail || !calories || !bpm || !duration) {
+      return res.status(400).json({
+        message: "All progress fields are required",
+      });
+    }
+
+    const progress = new Progress({
+      userEmail,
+      calories,
+      bpm,
+      duration,
+    });
+
+    await progress.save();
+
+    writeLog(`PROGRESS ADDED: ${userEmail}`);
+
+    res.status(201).json({
+      message: "Progress entry saved",
+    });
+  } catch (error) {
+    writeLog(`PROGRESS ERROR: ${error.message}`);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+});
+
+app.get("/api/progress/:email", async (req, res) => {
+  try {
+    const email = cleanInput(req.params.email);
+
+    const progress = await Progress.find({
+      userEmail: email,
+    }).sort({ date: 1 });
+
+    res.json(progress);
   } catch (error) {
     res.status(500).json({
       message: "Server error",
